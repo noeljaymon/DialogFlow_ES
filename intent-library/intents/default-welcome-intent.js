@@ -33,6 +33,7 @@ const defaultWelcomeIntent = async (df) =>{
     df.setResponseText("Hello i am a spotify bot, please select your query below");
     // for actions on google
     df.setSimpleResponses("Hello i am a spotify bot, please select your query below")
+    // suggestion chips on df messenger
     let payload={
         "richContent": [
           [
@@ -54,6 +55,7 @@ const defaultWelcomeIntent = async (df) =>{
         ]
       }
       df.setPayload(payload)
+// suggestion chips on actions on google      
 //     df.setSuggestions({
 //     "suggestions":["Music Recommendation","Play spotify On Bluetooth","Latest Songs"]
 // })
