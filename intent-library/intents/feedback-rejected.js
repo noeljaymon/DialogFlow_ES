@@ -27,15 +27,83 @@ var db= require("../../helper/constants");
 
 const feedback_reject = async (df) =>{
     df.setSynthesizeSpeech("Thats alright, do you want  music recommendation or latest songs or help with playing spotify on tv or to play spotify on bluetooth or exit")
-    df.setSimpleResponses("No problem.Please select next  query  below.")
-      
-    df.setSuggestions({
-    "suggestions":["music recommendation","How can i play spotify on Tv","How to play spotify on bluetooth","Latest songs","exit"]})
     if(df._request.queryResult.action=='smalltalk.confirmation.cancel'){
-        df.setSimpleResponses("Its sad to see you exit.Bye!");
-
+        df._request.originalDetectIntentRequest.source !== "google"?df.setResponseText("Its sad to see you exit.Bye!"):df.setSimpleResponses("Its sad to see you exit.Bye!");
     }
-     
+    if (df._request.originalDetectIntentRequest.source === "telegram") {
+        df.setPayload({
+            "telegram": {
+                "reply_markup": {
+                    "inline_keyboard": [
+                        [
+                            {
+                                "callback_data": "music recommendation",
+                                "text": "music recommendation"
+                            }
+                        ],
+                        [
+                            {
+                                "callback_data": "How can i play spotify on Tv",
+                                "text": "How can i play spotify on Tv"
+                            }
+                        ],
+                        [
+                            {
+                                "callback_data": "How to play spotify on bluetooth",
+                                "text": "How to play spotify on bluetooth"
+                            }
+                        ],
+                        [
+                            {
+                                "callback_data": "Latest songs",
+                                "text": "Latest songs"
+                            }
+                        ],
+                        [
+                            {
+                                "callback_data": "exit",
+                                "text": "exit"
+                            }
+                        ]
+                    ]
+                },
+                "text": "No problem.Please select next  query  below."
+            }
+        })
+    }
+    else if (df._request.originalDetectIntentRequest.source === "google") {
+        df.setSimpleResponses("No problem.Please select next  query  below.")
+        df.setSuggestions({
+        "suggestions":["music recommendation","How can i play spotify on Tv","How to play spotify on bluetooth","Latest songs","exit"]})
+    }else{
+        df.setResponseText(`No problem.Please select next  query  below.`)
+        df.setPayload({
+            "richContent": [
+              [
+                {
+                  "options": [
+                    {
+                      "text": "music recommendation"
+                    },
+                    {
+                      "text": "How can i play spotify on Tv"
+                    },
+                    {
+                      "text": "How to play spotify on bluetooth"
+                    },
+                    {
+                      "text": "Latest songs"
+                    },
+                    {
+                      "text": "exit"
+                    }
+                  ],
+                  "type": "chips"
+                }
+              ]
+            ]
+          })
+    }
 };
 
 module.exports = feedback_reject;

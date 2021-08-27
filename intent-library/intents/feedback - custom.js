@@ -27,6 +27,16 @@ var db= require("../../helper/constants");
  */
 
 function feedback_custom(df){
+    // Alternative for below uncommented code 
+    // if(score<=3){
+    //     // bad feedback response
+    // }
+    // else if(score<=5){
+    //     // good rating response
+    // }
+    // else{
+    //     // invalid rating
+    // }
     const score=df.getContext('feedback-custom-followup').parameters;
     if(score.rating){
         

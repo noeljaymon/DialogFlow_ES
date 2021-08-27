@@ -24,15 +24,83 @@ var db= require("../../helper/constants");
  * @param {object} df webhook fulfillment object
  * 
  */
-
-
-
-
 const feedback = async (df) =>{
     df.setSynthesizeSpeech("You can rate me between 1 to 5")
-    df.setSimpleResponses("You can rate me between 1 to 5")
-    df.setSuggestions({
-    "suggestions":["1","2","3","4","5"]
-})};
+    if (df._request.originalDetectIntentRequest.source === "telegram") {
+        df.setPayload({
+            "telegram": {
+                "reply_markup": {
+                    "inline_keyboard": [
+                        [
+                            {
+                                "callback_data": "1",
+                                "text": "1"
+                            }
+                        ],
+                        [
+                            {
+                                "callback_data": "2",
+                                "text": "2"
+                            }
+                        ],
+                        [
+                            {
+                                "callback_data": "3",
+                                "text": "3"
+                            }
+                        ],
+                        [
+                            {
+                                "callback_data": "4",
+                                "text": "4"
+                            }
+                        ],
+                        [
+                            {
+                                "callback_data": "5",
+                                "text": "5"
+                            }
+                        ]
+                    ]
+                },
+                "text": "You can rate me between 1 to 5"
+            }
+        })
+    }
+    else if (df._request.originalDetectIntentRequest.source === "google") {
+        df.setSimpleResponses('You can rate me between 1 to 5');
+        df.setSuggestions({
+            "suggestions":["1","2","3","4","5"]
+        })
+    }else{
+        df.setResponseText(`You can rate me between 1 to 5`)
+        df.setPayload({
+            "richContent": [
+              [
+                {
+                  "options": [
+                    {
+                      "text": "1"
+                    },
+                    {
+                      "text": "2"
+                    },
+                    {
+                      "text": "3"
+                    },
+                    {
+                      "text": "4"
+                    },
+                    {
+                      "text": "5"
+                    }
+                  ],
+                  "type": "chips"
+                }
+              ]
+            ]
+          })
+    }
+};
 
 module.exports = feedback;

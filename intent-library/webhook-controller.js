@@ -18,7 +18,7 @@
 
 const dialogflowFullfillment = require("dialogflow-fulfillment-builder");
 const config = require("./../config")();
-var db= require("./../helper/constants");
+var db = require("./../helper/constants");
 const intentMapper = require("./intent-mapper");
 var admin = require("firebase-admin");
 
@@ -41,67 +41,65 @@ module.exports = async (req, res, next) => {
 
         if (intentMapper[requestIntent]) {
             await intentMapper[requestIntent](fulfillment);
-        } else if(req.body.queryResult.action=='smalltalk.confirmation.cancel') {
+        } 
+        else if (req.body.queryResult.action == 'smalltalk.confirmation.cancel') {
             req.body.setSimpleResponses("Its sad to see you exit.Bye!- boilerplate");
-            
         }
-        else{
+        else {
             const requiredIntent = getIntent(requestIntent);
-            await require(requiredIntent)(fulfillment);}
-            
+            await require(requiredIntent)(fulfillment);
+        }
+
         let result = fulfillment.getCompiledResponse();
-        
-        let querytext=req.body.queryResult.queryText;
-        let source= req.body.originalDetectIntentRequest.source
+
+        let querytext = req.body.queryResult.queryText;
+        let source = req.body.originalDetectIntentRequest.source
         console.log(source);
-        let temp=req.body.session
-        let sess=temp.split("/");
-        let sess_id=sess[4];
+        let temp = req.body.session
+        let sess = temp.split("/");
+        let sess_id = sess[4];
         console.log(sess_id);
-        const reF=db.collection('chat-logs').doc(sess_id);
-        for(let i=0;i<result.fulfillmentMessages.length;i++){
-            switch(source){
+        const reF = db.collection('chat-logs').doc(sess_id);
+        for (let i = 0; i < result.fulfillmentMessages.length; i++) {
+            switch (source) {
                 case 'google':
-                    switch(result.fulfillmentMessages[i].simpleResponses){
+                    switch (result.fulfillmentMessages[i].simpleResponses) {
                         case undefined:
                             break;
                         default:
-                            if (result.fulfillmentMessages[i].platform=='ACTIONS_ON_GOOGLE'){
-                                let data={
-                            
-                                    platform:'ACTIONS_ON_GOOGLE',
-                                    userquery:querytext,
-                                    botanswer:result.fulfillmentMessages[i].simpleResponses.simpleResponses[0].displayText,
-                                    time:admin.firestore.FieldValue.serverTimestamp()
-                                    }
-        
-                                    reF.collection('messages').doc().set(data);
-                               
-        
+                            if (result.fulfillmentMessages[i].platform == 'ACTIONS_ON_GOOGLE') {
+                                let data = {
+
+                                    platform: 'ACTIONS_ON_GOOGLE',
+                                    userquery: querytext,
+                                    botanswer: result.fulfillmentMessages[i].simpleResponses.simpleResponses[0].displayText,
+                                    time: admin.firestore.FieldValue.serverTimestamp()
+                                }
+
+                                reF.collection('messages').doc().set(data);
+
+
                             }
-                        }
-                    break;   
+                    }
+                    break;
 
                 case 'GOOGLE_TELEPHONY':
-                    if (result.fulfillmentMessages[i].platform=='TELEPHONY'){
-                        let data1={
-                        
-                            platform:'TELEPHONY',
-                            userquery:querytext,
-                            botanswer:result.fulfillmentMessages[i].telephonySynthesizeSpeech.ssml,
-                            time:admin.firestore.FieldValue.serverTimestamp()
-                            }
-                            reF.collection('messages').doc().set(data1);
+                    if (result.fulfillmentMessages[i].platform == 'TELEPHONY') {
+                        let data1 = {
+
+                            platform: 'TELEPHONY',
+                            userquery: querytext,
+                            botanswer: result.fulfillmentMessages[i].telephonySynthesizeSpeech.ssml,
+                            time: admin.firestore.FieldValue.serverTimestamp()
+                        }
+                        reF.collection('messages').doc().set(data1);
 
                     }
-                    else{
-                        
+                    else {
+
                         break;
 
                     }
-                   
-                    
-
             }
         };
         res.status(200).json(result);

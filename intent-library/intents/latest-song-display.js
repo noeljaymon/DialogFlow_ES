@@ -26,35 +26,83 @@ var db= require("../../helper/constants");
  */
 function latest_song_display(df){
     let latest_genre=df.getContext('latest_genre').parameters['latest-genre'] ;
-    return db.collection("latest-songs").where('genre','==',latest_genre).limit(4).get().then((snapshot)=>{
-
-         
+    return db.collection("Spotify").where('genre','==',latest_genre).limit(4).get().then((snapshot)=>{
         let genre_arr =[];
         let genre_link=[];
-      
-      
+        
         snapshot.forEach((doc)=>{
           
-            const song=doc.data().songname;
+            const song=doc.data().songName;
             const link=doc.data().link;
-            
-            genre_arr.push(song);
-            genre_link.push(link);})
+            // pushing in uppercase so that the response looks better
+            genre_arr.push(song.toUpperCase());
+            genre_link.push(link);
+        })
             
       
         df.setSynthesizeSpeech(`The Top 4 latest song in ${latest_genre} are 1) ${genre_arr[0]},2)${genre_arr[1]},3)${genre_arr[2]},4)${genre_arr[3]}`)
-        df.setSimpleResponses(`The Top 4 latest song in ${latest_genre} are`) ;
-        
-        df.setSimpleResponses(`1) ${genre_arr[0]},link: ${genre_link[0]}\n`);
-        df.setSimpleResponses(`2)${genre_arr[1]},link: ${genre_link[1]}\n`);
-        df.setSimpleResponses(`3) ${genre_arr[2]},link: ${genre_link[2]}\n`);
-        df.setSimpleResponses(`4) ${genre_arr[3]},link: ${genre_link[3]}`);
         df.setSynthesizeSpeech(`If all your queries are done would you like to provide us with your valuable feedback?`);
-        df.setSimpleResponses("If all your queries are done would you like to provide us with your valuable feedback?") ;
-        df.setSuggestions({"suggestions":["Yes","No"]})
-    })
-    
-};
+        if (df._request.originalDetectIntentRequest.source === "telegram") {
+            df.setPayload({
+                "telegram": {
+                  "text": ` The Top 4 latest song in *${latest_genre}* music are \n 1)[${genre_arr[0]}](${genre_link[0]}). \n 2)[${genre_arr[1]}](${genre_link[1]})\n 3)[${genre_arr[2]}](${genre_link[2]})\n 4)[${genre_arr[3]}](${genre_link[3]})`,
+                  "parse_mode": "Markdown"
+                }
+              })
+            df.setPayload({
+                "telegram": {
+                    "reply_markup": {
+                        "inline_keyboard": [
+                            [
+                                {
+                                    "callback_data": "yes",
+                                    "text": "Yes"
+                                }
+                            ],
+                            [
+                                {
+                                    "callback_data": "no",
+                                    "text": "No"
+                                }
+                            ]
+                        ]
+                    },
+                    "text": "If all your queries are answered, would you be interested to provide feedback"
+                }
+            })
+        }
+        else if (df._request.originalDetectIntentRequest.source === "google") {
+            df.setSimpleResponses(`The Top 4 latest song in ${latest_genre} are`) ;
+            df.setSimpleResponses(`1) ${genre_arr[0]},link: ${genre_link[0]}\n 2)${genre_arr[1]},link: ${genre_link[1]}\n 3) ${genre_arr[2]},link: ${genre_link[2]}\n 4) ${genre_arr[3]},link: ${genre_link[3]}`);
+            df.setSimpleResponses("If all your queries are done would you like to provide us with your valuable feedback?") ;
+            df.setSuggestions({"suggestions":["Yes","No"]})
+        }else{
+            df.setResponseText(`The Top 4 latest song in ${latest_genre} are`)
+            df.setResponseText(`1) ${genre_arr[0]},link: ${genre_link[0]}\n`)
+            df.setResponseText(`2)${genre_arr[1]},link: ${genre_link[1]}\n`)
+            df.setResponseText(`3) ${genre_arr[2]},link: ${genre_link[2]}\n`)
+            df.setResponseText(`4) ${genre_arr[3]},link: ${genre_link[3]}`)
+
+            df.setPayload({
+                "richContent": [
+                  [
+                    {
+                      "options": [
+                        {
+                          "text": "Yes"
+                        },
+                        {
+                          "text": "No"
+                        }
+                      ],
+                      "type": "chips"
+                    }
+                  ]
+                ]
+              })
+        }
+    });
+}
 
 
 module.exports = latest_song_display;

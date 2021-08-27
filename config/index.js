@@ -25,7 +25,7 @@ const loadConfig = () => {
     return {
         "port": process.env.PORT || 3000,
         "fullfillmentConfig": {
-            "platformsEnabled": ["TEXT", "ACTIONS_ON_GOOGLE","TELEPHONY"]
+            "platformsEnabled": ["TEXT", "ACTIONS_ON_GOOGLE", "TELEPHONY"]
         },
         "auth": {
             "enable": false,

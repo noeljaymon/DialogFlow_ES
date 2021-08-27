@@ -17,7 +17,7 @@
 "use strict";
 
 const { Suggestion } = require("dialogflow-fulfillment");
-var db= require("../../helper/constants");
+var db = require("../../helper/constants");
 
 /**
  * Default Welcome Intent controller
@@ -26,32 +26,84 @@ var db= require("../../helper/constants");
  * 
  */
 
-function recommend(df){
+function recommend(df) {
 
-    var genre= df.getContext("song_name").parameters.musictype;
-   
-    return db.collection('Spotify').where('genre','==',genre).orderBy('views','desc').limit(4).get().then((snapshot)=>{
-    let music_arr =[];
-    let view_arr=[];
-    snapshot.forEach((doc)=>{
-        var song= df._request.queryResult.queryText;
-        console.log(song);
-        const music=doc.data().songName;
-        const view=doc.data().views;
-        if(music!=song){
-            music_arr.push(music);
-            view_arr.push(view)
-        }
-    }); 
+    var genre = df.getContext("song_name").parameters.musictype;
+
+    return db.collection('Spotify').where('genre', '==', genre).orderBy('views', 'desc').limit(4).get().then((snapshot) => {
+        let music_arr = [];
+        let view_arr = [];
+        snapshot.forEach((doc) => {
+            var song = df._request.queryResult.queryText.toLowerCase();
+            console.log(song);
+            const music = doc.data().songName;
+            const view = doc.data().views;
+            if (music != song) {
+                music_arr.push(music);
+                view_arr.push(view)
+            }
+        });
         df.setSynthesizeSpeech(`Recommendations are ${music_arr} with ${view_arr} views respectively.If all your queries are answered, would you be interested to provide feedback`);
-        df.setSimpleResponses(`Recommendations are ${music_arr} with ${view_arr} views respectively`);
-        df.setSimpleResponses('If all your queries are answered, would you be interested to provide feedback');
-        df.setSuggestions({
+        df.setResponseText(`Recommendations are ${music_arr} with ${view_arr} views respectively`)
+        if (df._request.originalDetectIntentRequest.source === "telegram") {
+            df.setPayload({
+                "telegram": {
+                    "text": `Recommendations are ${music_arr} with ${view_arr} views respectively`
+                }
+            })
+            df.setPayload({
+                "telegram": {
+                    "reply_markup": {
+                        "inline_keyboard": [
+                            [
+                                {
+                                    "callback_data": "yes",
+                                    "text": "Yes"
+                                }
+                            ],
+                            [
+                                {
+                                    "callback_data": "no",
+                                    "text": "No"
+                                }
+                            ]
+                        ]
+                    },
+                    "text": "If all your queries are answered, would you be interested to provide feedback"
+                }
+            })
+        }
+        else if (df._request.originalDetectIntentRequest.source === "google") {
+            df.setSimpleResponses(`Recommendations are ${music_arr} with ${view_arr} views respectively`);
+            df.setSimpleResponses('If all your queries are answered, would you be interested to provide feedback');
+            df.setSuggestions({
+                "suggestions": ["Yes", "No"]
+            })
+        }else{
+            df.setResponseText(`If all your queries are answered, would you be interested to provide feedback`)
+            df.setPayload({
+                "richContent": [
+                  [
+                    {
+                      "options": [
+                        {
+                          "text": "Yes"
+                        },
+                        {
+                          "text": "No"
+                        }
+                      ],
+                      "type": "chips"
+                    }
+                  ]
+                ]
+              })
+        }
 
-            "suggestions":["Yes","No"]
-        })
+
+
     });
-    
+
 
 };
 

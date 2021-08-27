@@ -24,7 +24,7 @@ const validateOption = require("../../helper/validate_query")
  */
 
 const getGenre = async (df) =>{
-    /* EXAMPLE OF HELPER FUNCTION WHICH CAN BE USED TO MAKE TEST CASES
+    /* EXAMPLE OF HELPER FUNCTION WHICH CAN BE USED TO MAKE UNIT TEST CASES
     const param=df._request.queryResult.queryText;
     const test_answer=validateOption(param);*/
     
