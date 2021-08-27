@@ -29,7 +29,7 @@ var db= require("../../helper/constants");
 const defaultWelcomeIntent = async (df) =>{
     // for telephony
     df.setSynthesizeSpeech("Hello i am a spotify bot,Do you want music recommendation or latest songs or help with playing spotify on tv,or to play spotify on bluetooth")
-    // for df messenger integration & telegram
+    // for df messenger integration 
     df.setResponseText("Hello i am a spotify bot, please select your query below");
     // for actions on google
     df.setSimpleResponses("Hello i am a spotify bot, please select your query below")
